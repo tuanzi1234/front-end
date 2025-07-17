@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>点名案例</title>
+    <style>
+        span {
+            font-size: 20px;
+
+        }
+    </style>
+</head>
+<body>
+<div>
+    <span>被点到的人是：</span><span id="name" style="margin-left: 30px; color: red"></span>
+</div>
+<div>
+    <button id="start">开始</button>
+    <button id="stop">停止</button>
+</div>
+<script>
+    const arr = ['张三', '李四', '王五', '赵六'];
+    const start = document.querySelector('#start');
+    const stop = document.querySelector('#stop');
+    const name = document.querySelector('#name');
+    let timer;
+    start.addEventListener('click',function () {
+        timer = setInterval(() => {
+            const index = Math.floor(Math.random() * arr.length);
+            name.innerHTML = arr[index];
+        }, 40);
+    });
+    stop.addEventListener('click', function () {
+        clearInterval(timer);
+    });
+</script>
+<script>
+</script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>轮播图点击切换</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    .slider {
+      width: 560px;
+      height: 400px;
+      overflow: hidden;
+    }
+
+    .slider-wrapper {
+      width: 100%;
+      height: 320px;
+    }
+
+    .slider-wrapper img {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .slider-footer {
+      height: 80px;
+      background-color: rgb(100, 67, 68);
+      padding: 12px 12px 0 12px;
+      position: relative;
+    }
+
+    .slider-footer .toggle {
+      position: absolute;
+      right: 0;
+      top: 12px;
+      display: flex;
+    }
+
+    .slider-footer .toggle button {
+      margin-right: 12px;
+      width: 28px;
+      height: 28px;
+      appearance: none;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .slider-footer .toggle button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .slider-footer p {
+      margin: 0;
+      color: #fff;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .slider-indicator {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .slider-indicator li {
+      width: 8px;
+      height: 8px;
+      margin: 4px;
+      border-radius: 50%;
+      background: #fff;
+      opacity: 0.4;
+      cursor: pointer;
+    }
+
+    .slider-indicator li.active {
+      width: 12px;
+      height: 12px;
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="slider">
+    <div class="slider-wrapper">
+      <img src="./img/slider01.jpg" alt="" />
+    </div>
+    <div class="slider-footer">
+      <p>对人类来说会不会太超前了？</p>
+      <ul class="slider-indicator">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+      </ul>
+      <div class="toggle">
+        <button class="prev">&lt;</button>
+        <button class="next">&gt;</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // 1. 初始数据
+    const sliderData = [
+      { url: './img/slider01.jpg', title: '对人类来说会不会太超前了？', color: 'rgb(100, 67, 68)' },
+      { url: './img/slider02.jpg', title: '开启剑与雪的黑暗传说！', color: 'rgb(43, 35, 26)' },
+      { url: './img/slider03.jpg', title: '真正的jo厨出现了！', color: 'rgb(36, 31, 33)' },
+      { url: './img/slider04.jpg', title: '李玉刚：让世界通过B站看到东方大国文化', color: 'rgb(139, 98, 66)' },
+      { url: './img/slider05.jpg', title: '快来分享你的寒假日常吧~', color: 'rgb(67, 90, 92)' },
+      { url: './img/slider06.jpg', title: '哔哩哔哩小年YEAH', color: 'rgb(166, 131, 143)' },
+      { url: './img/slider07.jpg', title: '一站式解决你的电脑配置问题！！！', color: 'rgb(53, 29, 25)' },
+      { url: './img/slider08.jpg', title: '谁不想和小猫咪贴贴呢！', color: 'rgb(99, 72, 114)' },
+    ]
+    // 轮播图
+    // 1. 初始化轮播图
+    const random = Math.floor(Math.random() * sliderData.length);
+    const img = document.querySelector('.slider-wrapper img');
+    const p = document.querySelector('.slider-footer p');
+    const color = document.querySelector('.slider-footer');
+    //2.修改轮播图元素的函数
+    function updateSlider(index) {
+      // 更新图片
+      img.src = sliderData[index].url;
+      // 更新标题
+      p.innerHTML = sliderData[index].title;
+      // 更新背景颜色（修复：添加 .style）
+      color.style.backgroundColor = sliderData[index].color;
+
+      // 更新圆点状态
+      const indicators = document.querySelectorAll('.slider-indicator li');
+      indicators.forEach(li => li.classList.remove('active'));
+      indicators[index].classList.add('active');
+    }
+    // 3.初始化轮播图
+    updateSlider(random);
+
+    //4.轮播图自动播放
+    function autoPlay(){
+      index++;
+      if (index === sliderData.length) {
+        index = 0;
+      }
+      updateSlider(index); // 调用复用函数
+    }
+    let index = random;
+    let solidTimer = setInterval(autoPlay, 2000);
+
+
+
+    const prev = document.querySelector('.prev');
+    const next = document.querySelector('.next');
+    // 5. 鼠标移入按钮轮播图自动播放停止
+    next.addEventListener('mouseenter', function() {
+      clearInterval(solidTimer);
+    });
+    prev.addEventListener('mouseenter', function() {
+      clearInterval(solidTimer);
+    });
+    next.addEventListener('mouseleave', function() {
+      solidTimer = setInterval(autoPlay, 2000);
+    });
+    prev.addEventListener('mouseleave', function() {
+      solidTimer = setInterval(autoPlay, 2000);
+    });
+    // 6. 轮播图点击切换
+    prev.addEventListener('click', function() {
+      index--;
+      if (index < 0) index = sliderData.length - 1;
+      updateSlider(index); // 调用复用函数
+    });
+    next.addEventListener('click', function() {
+      index++;
+      if (index === sliderData.length) index = 0;
+      updateSlider(index); // 调用复用函数
+    });
+  </script>
+</body>
+
+</html>

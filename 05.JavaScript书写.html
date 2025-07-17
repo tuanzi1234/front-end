@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>JavaScript书写</title>
+</head>
+<body>
+<script>
+    //九九乘法表
+    for (let i = 1; i < 10; i++) {
+        for (j = 1; j <= i; j++) {
+            document.write(j + " * " + i + " = " + i * j + "&nbsp;&nbsp;&nbsp;");
+        }
+        document.write("<br>");
+    }
+    //数组排序
+    let arr = [2, 6, 1, 77, 53, 11, 33, 4];
+    arr.sort((a, b) => a - b);  // 升序排序
+    document.write("<br>排序结果：");
+    arr.forEach(num => document.write(num + " "));
+    // 筛选数组
+    let temp = [];
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i] > 10){
+            temp.push(arr[i]);
+        }
+    }
+    document.write("<br>大于十的数组：" + temp);
+    //求最大值
+    let max = arr[0];
+    for (let i = 1; i < arr.length; i++) {
+        if (arr[i] > max) {
+            max = arr[i];
+        }
+    }
+    document.write("<br>最大值：" + max);
+
+    let second = +prompt('请输入秒数：' );
+    function getTime(second) {
+        function padZero(num) {
+            return num < 10 ? '0' + num : num.toString();
+        }
+        if (second < 60) {
+            document.write("<br>" + second + "秒转换成时分秒：" + second + "秒");
+        } else if (second >= 60 && second < 3600) {
+            let min = Math.floor(second / 60);
+            let sec = second % 60;
+            document.write("<br>" + second + "秒转换成时分秒：" + padZero(min) + "分" + padZero(sec) + "秒");
+        } else if (second >= 3600) {
+            let hour = Math.floor(second / 3600);
+            let min = Math.floor(second % 3600 / 60);
+            let sec = second % 60;
+            document.write("<br>" + second + "秒转换成时分秒：" + padZero(hour) + "时" + padZero(min) + "分" + padZero(sec) + "秒");
+        }
+    }
+    getTime(second);
+</script>
+</body>
+</html>
