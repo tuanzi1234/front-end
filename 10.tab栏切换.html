@@ -74,11 +74,11 @@
     <div class="tab-nav">
         <h3>每日特价</h3>
         <ul>
-            <li><a class="active" href="javascript:;">精选</a></li>
-            <li><a href="javascript:;">美食</a></li>
-            <li><a href="javascript:;">百货</a></li>
-            <li><a href="javascript:;">个护</a></li>
-            <li><a href="javascript:;">预告</a></li>
+            <li><a class="active" href="javascript:;" data-id="0">精选</a></li>
+            <li><a href="javascript:;" data-id="1">美食</a></li>
+            <li><a href="javascript:;" data-id="2">百货</a></li>
+            <li><a href="javascript:;" data-id="3">个护</a></li>
+            <li><a href="javascript:;" data-id="4">预告</a></li>
         </ul>
     </div>
     <div class="tab-content">
@@ -90,8 +90,7 @@
     </div>
 </div>
 <script>
-  // tab栏切换
-
+  /*// tab栏切换
   const tabBar = document.querySelectorAll('.tab-nav ul li a');
   for (let i = 0; i < tabBar.length; i++) {
     tabBar[i].addEventListener('mouseover', function () {
@@ -104,7 +103,23 @@
       document.querySelector('.tab-content .item.active').classList.remove('active');
       document.querySelector(`.tab-content .item:nth-child(${ i + 1 })`).classList.add('active');
     })
-  }
+  }*/
+  //使用事件委托修改上述逻辑
+  const tabBar = document.querySelector('.tab-nav ul');
+  const tabContent = document.querySelectorAll('.tab-content .item');
+  tabBar.addEventListener('click', function (e) {
+      if (e.target.tagName === 'A') {
+          //鼠标移入对应Tab栏高亮
+          //移除所有高亮
+          document.querySelector('.tab-nav ul li a.active').classList.remove('active');
+          //给当前鼠标移入的Tab栏高亮
+          e.target.classList.add('active');
+          //切换响应的内容
+          document.querySelector('.tab-content .item.active').classList.remove('active');
+          const id = +e.target.dataset.id;
+          tabContent[id].classList.add('active');
+      }
+  })
 
 </script>
 </body>
