@@ -1227,30 +1227,46 @@
     //返回顶部
     const backTop = document.querySelector('#backTop');
     backTop.addEventListener('click', function () {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth' // 关键修改
-      });
+        document.documentElement.scrollTo(0, 0);
     })
     //点击导航栏跳转
     const list = document.querySelector('.xtx-elevator-list');
     //点击导航栏高亮显示
     list.addEventListener('click', function (e) {
-      // 排除顶部按钮
-      if (e.target.id !== 'backTop' && e.target.tagName === 'A') {
+        // 排除顶部按钮
+        if (e.target.id !== 'backTop' && e.target.tagName === 'A') {
+            // 移除现有高亮
+            const active = list.querySelector('.active');
+            if (active) active.classList.remove('active');
+            // 添加新高亮
+            e.target.classList.add('active');
+            // 点击导航栏跳转
+            //获取对应商品界面的offsetTop值
+            const top = document.querySelector(`.xtx_goods_${e.target.dataset.name}`).offsetTop;
+            document.documentElement.scrollTop = top;
+        }
+    })
+
+    //当滑动到对应商品时，导航高亮
+    window.addEventListener('scroll', function () {
         // 移除现有高亮
         const active = list.querySelector('.active');
         if (active) active.classList.remove('active');
-        // 添加新高亮
-        e.target.classList.add('active');
-        // 点击导航栏跳转
-        //获取对应商品界面的offsetTop值
-        const top = document.querySelector(`.xtx_goods_${e.target.dataset.name}`).offsetTop;
-        window.scrollTo({
-          top: top,
-          behavior: 'smooth' // 关键修改
-        });
-      }
+        // 获取所有商品
+        const goods = document.querySelector('.xtx_goods_new');
+        const popular = document.querySelector('.xtx_goods_popular');
+        const brand = document.querySelector('.xtx_goods_brand');
+        const topic = document.querySelector('.xtx_goods_topic');
+        const scrollTop = document.documentElement.scrollTop;
+        if ( scrollTop >= goods.offsetTop && scrollTop < popular.offsetTop){
+            list.querySelector('[data-name="new"]').classList.add('active');
+        }else if (scrollTop >= popular.offsetTop && scrollTop < brand.offsetTop){
+            list.querySelector('[data-name="popular"]').classList.add('active');
+        }else if (scrollTop >= brand.offsetTop && scrollTop < topic.offsetTop){
+            list.querySelector('[data-name="brand"]').classList.add('active');
+        }else if (scrollTop >= topic.offsetTop) {
+            list.querySelector('[data-name="topic"]').classList.add('active');
+        }
     })
 </script>
 </body>
