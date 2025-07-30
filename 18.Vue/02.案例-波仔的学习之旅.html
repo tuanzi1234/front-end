@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轮播图</title>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="app" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <div style="display: flex; flex-direction: column; justify-content: center">
+        <img :src="img[index]" alt="">
+        <div style="display: flex; justify-content: space-between">
+            <button @click="previous">上一张</button>
+            <button @click="next">下一张</button>
+        </div>
+    </div>
+</div>
+<script src="./http_cdn.jsdelivr.net_npm_vue@2_dist_vue.js"></script>
+<script>
+    const app = new Vue({
+        el: '#app',
+        data: {
+            index: 0,
+            img: [
+                './imgs/11-00.gif',
+                './imgs/11-01.gif',
+                './imgs/11-02.gif',
+                './imgs/11-03.gif',
+                './imgs/11-04.png',
+                './imgs/11-05.png',
+            ]
+        },
+        methods: {
+            next() {
+                this.index++;
+                if (this.index > this.img.length - 1) {
+                    this.index = 0;
+                }
+            },
+            previous() {
+                this.index--;
+                if (this.index < 0) {
+                    this.index = this.img.length - 1;
+                }
+            }
+        }
+    })
+</script>
+</body>
+</html>
