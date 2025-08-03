@@ -1,0 +1,11 @@
+{
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^24.0.15",
+    "ts-node": "^10.9.2"
+  },
+  "ts-node": {
+    "esm": false,
+    "transpileOnly": true
+  }
+}
