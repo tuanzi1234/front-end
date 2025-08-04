@@ -1,13 +1,15 @@
 <template>
-  <div id="app">
-    <router-view/>
+  <div class="user">
+    用户
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App'
+  name: 'ShoppingUser'
 }
 </script>
-<style lang="less">
+
+<style scoped>
+
 </style>
