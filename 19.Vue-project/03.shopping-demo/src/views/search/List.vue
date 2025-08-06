@@ -34,6 +34,10 @@
 
     <div class="goods-list">
       <GoodsItem v-for="item in proList" :key="item.goods_id" :item="item"></GoodsItem>
+      <!-- 当未搜索到商品时显示 -->
+      <div v-if="proList.length === 0" class="no-result">
+        抱歉，没有找到相关商品
+      </div>
     </div>
   </div>
 </template>
@@ -78,10 +82,13 @@ export default {
     }
   },
   async created () {
+    // 从路由参数中获取分类ID
+    this.categoryId = this.$route.query.categoryId
     // 1.请求商品列表数据
     const res = await getProductDetail({
       goodsName: this.querySearch,
-      page: this.page
+      page: this.page,
+      categoryId: this.categoryId
     })
     this.proList = res.data.list.data
   },
@@ -188,5 +195,13 @@ export default {
 // 商品样式
 .goods-list {
   background-color: #f6f6f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  .no-result {
+    font-size: 20px;
+    color: #333;
+  }
 }
 </style>

@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { Button, Tabbar, TabbarItem, NavBar, Form, Field, Toast, Search, Swipe, SwipeItem, Grid, GridItem, Icon } from 'vant'
+import { Button, Tabbar, TabbarItem, NavBar, Form, Field, Toast, Search, Swipe, SwipeItem, Grid, GridItem, Icon, Sidebar, SidebarItem, TreeSelect, Rate } from 'vant'
 
 Vue.use(Button)
 Vue.use(Tabbar)
@@ -14,3 +14,7 @@ Vue.use(SwipeItem)
 Vue.use(Grid)
 Vue.use(GridItem)
 Vue.use(Icon)
+Vue.use(Sidebar)
+Vue.use(SidebarItem)
+Vue.use(TreeSelect)
+Vue.use(Rate)
