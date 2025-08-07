@@ -1,5 +1,6 @@
 import { getInfo, setInfo } from '@/utils/storage'
 
+// 用户模块
 export default {
   namespace: true,
   state () {

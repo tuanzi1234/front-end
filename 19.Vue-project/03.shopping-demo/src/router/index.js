@@ -90,7 +90,7 @@ router.beforeEach((to, from, next) => {
   // 查看to.path是否在needLogin数组中
   if (!needLogin.includes(to.path)) {
     // 如果没有，直接放行
-    next()
+    return next()
   }
   // 如果有，查看store中是否有token
   const token = store.getters.token

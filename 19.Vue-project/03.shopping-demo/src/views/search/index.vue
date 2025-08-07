@@ -1,5 +1,6 @@
 <template>
   <div class="search">
+    <!-- 搜索框 -->
     <van-nav-bar title="商品搜索" left-arrow @click-left="$router.go(-1)" />
 
     <van-search show-action v-model="searchValue" placeholder="请输入搜索关键词" clearable>

@@ -126,8 +126,8 @@ export default {
         case 'sales':
           sortedList.sort((a, b) =>
             this.sortDirection === 'desc'
-              ? b.goods_sales - a.goods_sales
-              : a.goods_sales - b.goods_sales
+              ? b.goods_sales - a.goods_sales // 降序
+              : a.goods_sales - b.goods_sales // 升序
           )
           break
 

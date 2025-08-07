@@ -1,5 +1,6 @@
 <template>
   <div class="shopping-category">
+    <!-- 标题 -->
     <div class="header-title">
       全部分类
     </div>
@@ -9,6 +10,7 @@
       </van-search>
     </div>
     <div class="main">
+      <!-- 分类列表 -->
       <div class="left-category">
         <van-sidebar v-model="activeIndex" @change="handleCategoryChange">
           <van-sidebar-item
@@ -19,6 +21,7 @@
           />
         </van-sidebar>
       </div>
+      <!-- 子分类列表 -->
       <div class="right-category">
         <van-grid :column-num="2">
           <van-grid-item v-for="item of subCategoryList" :key="item.category_id" @click="router().push(`/searchlist?categoryId=${item.category_id}`)">
@@ -41,7 +44,7 @@ export default {
   name: 'ShoppingCategory',
   data () {
     return {
-      activeIndex: 0, // 添加这行
+      activeIndex: 0, // 默认选中第一个分类
       activeCategoryId: 0, // 选中的分类id
       categoryList: [], // 分类列表
       subCategoryList: [] // 子分类列表
@@ -58,7 +61,6 @@ export default {
       if (list.length > 0) {
         this.subCategoryList = list[0].children || [] // 确保children存在
       }
-      console.log(this.activeCategoryId)
     },
     // 添加分类切换处理方法
     handleCategoryChange (index) {
@@ -66,7 +68,6 @@ export default {
         this.subCategoryList = this.categoryList[index].children || []
       } else {
         this.subCategoryList = []
-        console.warn(`未找到索引为 ${index} 的分类`)
       }
     }
   },

@@ -1,10 +1,11 @@
 <template>
   <div class="prodetail">
-    <van-nav-bar fixed title="商品详情页" left-arrow @click-left="$router.go(-1)" />
-
+    <!-- 商品详情页头部 -->
+    <van-nav-bar fixed title="商品详情页" left-arrow @click-left="$router.go(-1)"/>
+    <!-- 商品轮播图 -->
     <van-swipe :autoplay="3000" @change="onChange">
       <van-swipe-item v-for="(image, index) in images" :key="index">
-        <img :src="image.external_url" />
+        <img :src="image.external_url"/>
       </van-swipe-item>
 
       <template #indicator>
@@ -27,11 +28,11 @@
 
       <div class="service">
         <div class="left-words">
-          <span><van-icon name="passed" />七天无理由退货</span>
-          <span><van-icon name="passed" />48小时发货</span>
+          <span><van-icon name="passed"/>七天无理由退货</span>
+          <span><van-icon name="passed"/>48小时发货</span>
         </div>
         <div class="right-icon">
-          <van-icon name="arrow" />
+          <van-icon name="arrow"/>
         </div>
       </div>
     </div>
@@ -40,10 +41,12 @@
     <div class="comment">
       <div class="comment-title">
         <div class="left">商品评价 ({{ total }}条)</div>
-        <div class="right">查看更多 <van-icon name="arrow" /> </div>
+        <div class="right">查看更多
+          <van-icon name="arrow"/>
+        </div>
       </div>
       <div class="comment-list">
-        <div class="comment-item" v-for="item in comment" :key="item">
+        <div class="comment-item" v-for="item in comment" :key="item.comment_id">
           <div class="top">
             <img :src="item.user.avatar_url || defaultImg" alt="">
             <div class="name">{{ item.user.nick_name }}</div>
@@ -65,23 +68,55 @@
 
     <!-- 底部 -->
     <div class="footer">
-      <div class="icon-home">
-        <van-icon name="wap-home-o" />
+      <div class="icon-home" @click="$router.push('/')">
+        <van-icon name="wap-home-o"/>
         <span>首页</span>
       </div>
-      <div class="icon-cart">
-        <van-icon name="shopping-cart-o" />
+      <div class="icon-cart" @click="$router.push('/cart')">
+        <van-badge :content="cartTotal" class="custom-badge" v-if="cartTotal">
+          <van-icon name="shopping-cart-o"/>
+        </van-badge>
+        <van-icon name="shopping-cart-o" v-else/>
         <span>购物车</span>
       </div>
-      <div class="btn-add">加入购物车</div>
-      <div class="btn-buy">立刻购买</div>
+      <div class="btn-add" @click="addShop">加入购物车</div>
+      <div class="btn-buy" @click="buyShop">立刻购买</div>
     </div>
+
+    <!-- 购物车提示框 -->
+    <van-action-sheet v-model="shoppingPannel" :title="mode === 'cart' ? '加入购物车' : '立即购买'">
+      <div class="content">
+        <!-- 购物车提示框内容 -->
+        <div class="pannel">
+          <img :src="detail.goods_image" alt="">
+          <div class="price-detail">
+            <div class="price">￥<span>{{ detail.goods_price_min }}</span></div>
+            <div class="detail">库存&nbsp;&nbsp;{{ detail.stock_total }}</div>
+          </div>
+        </div>
+        <!-- 购物车数量增减 -->
+        <div class="num">
+          <span class="num-content">数量</span>
+          <van-stepper v-model="shoppingNum" theme="" button-size="40" disable-input/>
+        </div>
+        <!-- 加入购物车按钮 -->
+        <div class="btn-group">
+          <van-button color="#FF8C00" v-if="mode === 'cart' && detail.stock_total > 0" round size="large"
+                      @click="addCart">加入购物车
+          </van-button>
+          <van-button color="#FE5630" v-else-if="mode === 'buy' && detail.stock_total > 0" round size="large">立即购买
+          </van-button>
+          <van-button v-else round size="large" disabled>该商品已售完</van-button>
+        </div>
+      </div>
+    </van-action-sheet>
   </div>
 </template>
 
 <script>
 import { getProComment, getProDetail } from '@/api/product'
 import defaultImg from '@/assets/default-avatar.png'
+import { addCartList } from '@/api/cart'
 
 export default {
   name: 'ProDetail',
@@ -92,7 +127,11 @@ export default {
       detail: {},
       total: 0, // 商品评论总数
       comment: [], // 商品评论
-      defaultImg
+      defaultImg, // 默认图片
+      shoppingPannel: false, // 购物车提示框
+      mode: 'cart', // 提示框模式
+      shoppingNum: 1, // 购物车数量
+      cartTotal: 0 // 购物车角标
     }
   },
   methods: {
@@ -106,10 +145,50 @@ export default {
       this.images = detail.goods_images
     },
     async getComment () {
-      // 获取商品详情
-      const { data: { list, total } } = await getProComment(this.goodsId, 3)
+      // 获取商品评价
+      const {
+        data: {
+          list,
+          total
+        }
+      } = await getProComment(this.goodsId, 3)
       this.comment = list
       this.total = total
+    },
+    addShop () {
+      this.mode = 'cart'
+      this.shoppingPannel = true
+    },
+    buyShop () {
+      this.mode = 'buy'
+      this.shoppingPannel = true
+    },
+    async addCart () {
+      // 1.判断token是否存在(是否登录), 没有则弹出提示框确认是否登录
+      if (!this.$store.getters.token) {
+        this.$dialog.confirm({
+          title: '提示',
+          message: '该功能需要登录，是否前往登录？',
+          confirmButtonText: '去登录',
+          cancelButtonText: '再逛逛',
+          confirmButtonColor: '#FFA900',
+          beforeClose: this.beforeClose
+        }).then(() => {
+          this.$router.replace({
+            path: '/login',
+            query: {
+              // 登录完毕后回到当前页面
+              redirect: this.$route.fullPath
+            }
+          })
+        }).catch(() => {
+        })
+      } else {
+        const { data } = await addCartList(this.goodsId, this.shoppingNum, this.detail.skuList[0].goods_sku_id)
+        this.cartTotal = data.cartTotal
+        this.$toast.success('购物车添加成功')
+        this.shoppingPannel = false
+      }
     }
   },
   computed: {
@@ -129,13 +208,16 @@ export default {
 <style lang="less" scoped>
 .prodetail {
   padding-top: 46px;
+
   ::v-deep .van-icon-arrow-left {
     color: #333;
   }
+
   img {
     display: block;
     width: 100%;
   }
+
   .custom-indicator {
     position: absolute;
     right: 10px;
@@ -145,30 +227,37 @@ export default {
     background: rgba(0, 0, 0, 0.1);
     border-radius: 15px;
   }
+
   .desc {
     width: 100%;
     overflow: scroll;
+
     ::v-deep img {
       display: block;
-      width: 100%!important;
+      width: 100% !important;
     }
   }
+
   .info {
     padding: 10px;
   }
+
   .title {
     display: flex;
     justify-content: space-between;
+
     .now {
       color: #fa2209;
       font-size: 20px;
     }
+
     .oldprice {
       color: #959595;
       font-size: 16px;
       text-decoration: line-through;
       margin-left: 5px;
     }
+
     .sellcount {
       color: #959595;
       font-size: 16px;
@@ -176,11 +265,13 @@ export default {
       top: 4px;
     }
   }
+
   .msg {
     font-size: 16px;
     line-height: 24px;
     margin-top: 5px;
   }
+
   .service {
     display: flex;
     justify-content: space-between;
@@ -188,10 +279,12 @@ export default {
     margin-top: 10px;
     font-size: 16px;
     background-color: #fafafa;
+
     .left-words {
       span {
         margin-right: 10px;
       }
+
       .van-icon {
         margin-right: 4px;
         color: #fa2209;
@@ -202,9 +295,11 @@ export default {
   .comment {
     padding: 10px;
   }
+
   .comment-title {
     display: flex;
     justify-content: space-between;
+
     .right {
       color: #959595;
     }
@@ -213,19 +308,23 @@ export default {
   .comment-item {
     font-size: 16px;
     line-height: 30px;
+
     .top {
       height: 30px;
       display: flex;
       align-items: center;
       margin-top: 20px;
+
       img {
         width: 20px;
         height: 20px;
       }
+
       .name {
         margin: 0 10px;
       }
     }
+
     .time {
       color: #999;
     }
@@ -242,16 +341,19 @@ export default {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
+
     .icon-home, .icon-cart {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       font-size: 14px;
+
       .van-icon {
         font-size: 24px;
       }
     }
+
     .btn-add,
     .btn-buy {
       height: 36px;
@@ -263,6 +365,7 @@ export default {
       color: #fff;
       font-size: 14px;
     }
+
     .btn-buy {
       background-color: #fe5630;
     }
@@ -271,5 +374,60 @@ export default {
 
 .tips {
   padding: 10px;
+}
+
+.content {
+  padding: 0 10px;
+
+  .pannel {
+    display: flex;
+    justify-content: flex-start;
+
+    img {
+      width: 150px;
+      height: 150px;
+    }
+
+    .price-detail {
+      margin-left: 10px;
+
+      .price {
+        color: #FF8C00;
+        font-size: 20px;
+
+        span {
+          font-size: 30px;
+        }
+      }
+
+      .detail {
+        margin-top: 5px;
+        color: #999;
+        font-size: 16px;
+      }
+    }
+  }
+
+  .num {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 10px;
+
+    .num-content {
+      color: #696969;
+      font-size: 16px;
+    }
+  }
+
+  .btn-group {
+    margin-bottom: 10px;
+  }
+}
+.custom-badge {
+  ::v-deep .van-badge {
+    transform: translate(40%, -20%);
+  }
 }
 </style>
