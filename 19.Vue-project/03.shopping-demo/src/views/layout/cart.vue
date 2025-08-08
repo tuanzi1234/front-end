@@ -3,64 +3,121 @@
     <div class="cart-header">
       购物车
     </div>
-    <div class="content-header">
-      <span>共 <span class="num">{{ cartList.length }}</span> 件商品</span> <span><van-icon name="edit"/>编辑</span>
-    </div>
-    <div class="cart-content">
-      <div class="content-list" v-for="item in cartList" :key="item.id">
-        <van-checkbox/>
-        <img
-          :src="item.goods.goods_images && item.goods.goods_images.length > 0 ? item.goods.goods_images[0].external_url : ''"
-          alt=""
-          v-if="item.goods.goods_images && item.goods.goods_images.length > 0"
-        >
-        <div class="content-detail">
-          <div class="content-title">
-            {{ item.goods.goods_name }}
-          </div>
-          <div class="content-footer">
-            <span class="price">¥ {{ item.goods.goods_price_min }}</span>
-            <span><van-stepper v-model="item.goods_num" theme="" button-size="42" disable-input/></span>
+    <div v-if="isLogin && cartList.length > 0">
+      <div class="content-header">
+        <span>共 <span class="num">{{ cartListLength }}</span> 件商品</span> <span @click="isEdit = !isEdit"><van-icon
+        name="edit"/>编辑</span>
+      </div>
+      <div class="cart-content">
+        <div class="content-list" v-for="item in cartList" :key="item.id">
+          <van-checkbox v-model="item.isChecked"/>
+          <img
+            :src="item.goods.goods_images && item.goods.goods_images.length > 0 ? item.goods.goods_images[0].external_url : ''"
+            alt=""
+            v-if="item.goods.goods_images && item.goods.goods_images.length > 0"
+          >
+          <div class="content-detail">
+            <div class="content-title">
+              {{ item.goods.goods_name }}
+            </div>
+            <div class="content-footer">
+              <span class="price">¥ {{ item.goods.goods_price_min }}</span>
+              <span><van-stepper :value="item.goods_num" @change="(value) => onGoodsNumChange(item, value)" theme=""
+                                 button-size="42" disable-input/></span>
+            </div>
           </div>
         </div>
       </div>
+      <div class="cart-footer">
+        <div class="footer-left">
+          <van-checkbox v-model="isAllChecked" @click="checkedAll"/>
+          <span>全选</span>
+        </div>
+        <div class="footer-right">
+          合计：¥<span class="price"> {{ checkedGoodsPrice }}</span>
+          <van-button v-if="!isEdit" color="#FC411C" round size="small" @click="goPay">去结算({{ checkedGoodsLength }})</van-button>
+          <van-button v-else color="#FC411C" round size="small" @click="del">删除</van-button>
+        </div>
+      </div>
     </div>
-    <div class="cart-footer">
-      <div class="footer-left">
-        <van-checkbox/>
-        <span>全选</span>
-      </div>
-      <div class="footer-right">
-        合计：¥<span class="price"> {{ totalPrice }}</span>
-        <van-button type="primary" round size="small">去结算({{ cartList.length }})</van-button>
-      </div>
+    <div v-else class="cart-empty">
+      <van-empty image="search" description="购物车空空如也">
+        <div class="cart-empty-btn" @click="this.$router.push('/')">
+          <van-button round color="#FC411C" size="small">去逛逛</van-button>
+        </div>
+      </van-empty>
     </div>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 
 export default {
   name: 'ShoppingCart',
   data () {
-    return {}
+    return {
+      isAllChecked: false, // 全选状态
+      isEdit: false // 是否处于编辑状态
+    }
+  },
+  methods: {
+    checkedAll () {
+      this.cartList.forEach(item => {
+        item.isChecked = this.isAllChecked
+      })
+    },
+    updateAllCheckedState () {
+      // 更新全选状态
+      this.isAllChecked = this.cartList.length > 0 &&
+        this.cartList.every(item => item.isChecked)
+    },
+    // 商品数量变化处理
+    async onGoodsNumChange (item, newNum) {
+      await this.$store.dispatch('cart/updateCartNumAction', {
+        item,
+        goodsNum: newNum
+      })
+    },
+    // 删除商品
+    del () {
+      // 删除商品
+      if (this.checkedGoodsLength === 0) return
+      this.$store.dispatch('cart/delCartAction')
+    },
+    goPay () {
+      // 跳转到支付页面
+      if (this.checkedGoodsLength === 0) return
+      this.$router.push({
+        path: '/pay',
+        query: {
+          mode: 'cart',
+          cartIds: this.checkedGoods.map(item => item.id).join(',')
+        }
+      })
+    }
+  },
+  watch: {
+    cartList: {
+      handler () {
+        this.updateAllCheckedState()
+      },
+      deep: true // 深度监听
+    }
   },
   created () {
     // 先判断token是否存在，若存在，则获取购物车列表
-    if (this.$store.getters.token) {
+    if (this.isLogin) {
       this.$store.dispatch('cart/getCartAction')
     }
   },
   computed: {
     // 获取购物车列表
     ...mapState('cart', ['cartList']),
-    // 计算总价格并处理精度问题
-    totalPrice () {
-      const total = this.cartList.reduce((total, item) => {
-        return total + item.goods.goods_price_min * item.goods_num
-      }, 0)
-      return parseFloat(total.toFixed(2))
+    // 获取购物车页面的参数
+    ...mapGetters('cart', ['checkedGoodsLength', 'cartListLength', 'checkedGoods', 'checkedGoodsPrice']),
+    isLogin () {
+      return this.$store.getters.token
     }
   }
 }
@@ -161,18 +218,27 @@ export default {
         margin-right: 10px;
       }
     }
+
     .footer-right {
       display: flex;
       align-items: center;
+
       .price {
         color: red;
         font-size: 16px;
         margin-right: 10px;
       }
+
       .van-button {
         width: 80px;
       }
     }
+  }
+}
+.cart-empty {
+  text-align: center;
+  .van-button {
+    width: 100px;
   }
 }
 
