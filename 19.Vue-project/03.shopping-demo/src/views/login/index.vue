@@ -145,7 +145,7 @@ export default {
       }
       // 该系统手机号默认为:18917286702
       const res = await login(this.phoneNumber, this.phoneCode)
-      this.$store.commit('setUserInfo', res.data)
+      this.$store.commit('user/setUserInfo', res.data)
       this.$toast.success('登录成功')
       // 做出判断，判断路径中有没有携带重定向地址，如果有则跳转
       const url = this.$route.query.redirect || '/'

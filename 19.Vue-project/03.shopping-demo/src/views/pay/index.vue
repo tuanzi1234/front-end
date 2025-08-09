@@ -59,7 +59,7 @@
     <!-- 留言-->
     <div class="message">
       <van-field
-        v-model="value"
+        v-model="remark"
         autosize
         rows="2"
         show-word-limit
@@ -72,14 +72,14 @@
     <!-- 提交-->
     <div class="pay-submit">
       <span>实付款：&nbsp;<span class="goods-total-price">¥{{ goodsTotalPrice }}</span></span>
-      <van-button type="primary" color="linear-gradient(to right, #ee0a24, #ff6034)" @click="goPay">提交订单</van-button>
+      <van-button type="primary" color="linear-gradient(to right, #ee0a24, #ff6034)" @click="submitPay">提交订单</van-button>
     </div>
   </div>
 </template>
 
 <script>
 import { getAddressList } from '@/api/address'
-import { checkOrder } from '@/api/order'
+import { checkOrder, submitOrder } from '@/api/order'
 
 export default {
   name: 'PayIndex',
@@ -87,7 +87,8 @@ export default {
     return {
       addressList: [],
       order: {},
-      personal: {}
+      personal: {},
+      remark: '' // 留言
     }
   },
   created () {
@@ -95,6 +96,26 @@ export default {
     this.checkOrder()
   },
   methods: {
+    async submitPay () {
+      if (this.mode === 'buyNow') {
+        await submitOrder(this.mode, {
+          goodsId: this.goodsId,
+          goodsNum: this.goodsNum,
+          goodsSkuId: this.goodsSkuId,
+          remark: this.remark
+        })
+      }
+      if (this.mode === 'cart') {
+        await submitOrder(this.mode, {
+          cartIds: this.cartIds,
+          remark: this.remark
+        })
+      }
+      this.$toast.success('订单支付成功')
+      this.$router.replace({
+        path: '/myorder'
+      })
+    },
     async getAddressList () {
       const { data } = await getAddressList()
       this.addressList = data.list
@@ -103,17 +124,22 @@ export default {
       this.$router.back()
     },
     async checkOrder () {
-      const {
-        data: {
-          order,
-          personal
-        }
-      } = await checkOrder(this.mode, {
-        cartIds: this.cartIds
-      })
-      this.order = order
-      console.log(order)
-      this.personal = personal
+      if (this.mode === 'buyNow') {
+        const { data: { order, personal } } = await checkOrder(this.mode, {
+          goodsId: this.goodsId,
+          goodsNum: this.goodsNum,
+          goodsSkuId: this.goodsSkuId
+        })
+        this.order = order
+        this.personal = personal
+      }
+      if (this.mode === 'cart') {
+        const { data: { order, personal } } = await checkOrder(this.mode, {
+          cartIds: this.cartIds
+        })
+        this.order = order
+        this.personal = personal
+      }
     }
   },
   computed: {
@@ -151,6 +177,15 @@ export default {
       }, 0)
       // 解决浮点数精度问题，保留两位小数
       return total.toFixed(2)
+    },
+    goodsId () {
+      return this.$route.query.goodsId
+    },
+    goodsNum () {
+      return this.$route.query.goodsNum
+    },
+    goodsSkuId () {
+      return this.$route.query.goodsSkuId
     }
   }
 }

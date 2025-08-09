@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { Button, Tabbar, TabbarItem, NavBar, Form, Field, Toast, Search, Swipe, SwipeItem, Grid, GridItem, Icon, Sidebar, SidebarItem, TreeSelect, Rate, ActionSheet, Stepper, Dialog, Badge, Checkbox, Empty } from 'vant'
+import { Button, Tabbar, TabbarItem, NavBar, Form, Field, Toast, Search, Swipe, SwipeItem, Grid, GridItem, Icon, Sidebar, SidebarItem, TreeSelect, Rate, ActionSheet, Stepper, Dialog, Badge, Checkbox, Empty, Tab, Tabs } from 'vant'
 
 Vue.use(Button)
 Vue.use(Tabbar)
@@ -24,3 +24,5 @@ Vue.use(Dialog)
 Vue.use(Badge)
 Vue.use(Checkbox)
 Vue.use(Empty)
+Vue.use(Tabs)
+Vue.use(Tab)

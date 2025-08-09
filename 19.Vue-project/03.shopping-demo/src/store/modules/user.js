@@ -2,7 +2,7 @@ import { getInfo, setInfo } from '@/utils/storage'
 
 // 用户模块
 export default {
-  namespace: true,
+  namespaced: true,
   state () {
     return {
       userInfo: getInfo()
@@ -14,6 +14,14 @@ export default {
       setInfo(payload)
     }
   },
-  actions: {},
-  getters: {}
+  actions: {
+    logout (context) {
+      // 清空用户信息
+      context.commit('setUserInfo', {})
+      // 重置购物车数据
+      context.commit('cart/setCartList', [], { root: true })
+    }
+  },
+  getters: {
+  }
 }

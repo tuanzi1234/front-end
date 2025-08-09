@@ -19,6 +19,7 @@ export default {
     }
   },
   actions: {
+    // 获取购物车列表
     async getCartAction (context) {
       const { data } = await getCartList()
       // 设置购物车的isChecked状态(标记是否选中)

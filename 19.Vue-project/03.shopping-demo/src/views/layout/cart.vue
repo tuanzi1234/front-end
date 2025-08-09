@@ -1,13 +1,16 @@
 <template>
   <div class="cart">
+<!--    购物车顶部-->
     <div class="cart-header">
       购物车
     </div>
     <div v-if="isLogin && cartList.length > 0">
+<!--      头部信息-->
       <div class="content-header">
         <span>共 <span class="num">{{ cartListLength }}</span> 件商品</span> <span @click="isEdit = !isEdit"><van-icon
         name="edit"/>编辑</span>
       </div>
+<!--      商品内容-->
       <div class="cart-content">
         <div class="content-list" v-for="item in cartList" :key="item.id">
           <van-checkbox v-model="item.isChecked"/>
@@ -28,6 +31,7 @@
           </div>
         </div>
       </div>
+<!--      底部操作栏-->
       <div class="cart-footer">
         <div class="footer-left">
           <van-checkbox v-model="isAllChecked" @click="checkedAll"/>
@@ -42,8 +46,8 @@
     </div>
     <div v-else class="cart-empty">
       <van-empty image="search" description="购物车空空如也">
-        <div class="cart-empty-btn" @click="this.$router.push('/')">
-          <van-button round color="#FC411C" size="small">去逛逛</van-button>
+        <div class="cart-empty-btn">
+          <van-button round color="#FC411C" @click="$router.push('/')" size="small">去逛逛</van-button>
         </div>
       </van-empty>
     </div>
@@ -99,7 +103,7 @@ export default {
   },
   watch: {
     cartList: {
-      handler () {
+      handler () { // 监听购物车列表选择状态
         this.updateAllCheckedState()
       },
       deep: true // 深度监听

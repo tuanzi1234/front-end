@@ -23,7 +23,7 @@
         <div class="sellcount">已售{{ detail.goods_sales }}件</div>
       </div>
       <div class="msg text-ellipsis-2">
-        三星手机 SAMSUNG Galaxy S23 8GB+256GB 超视觉夜拍系统 超清夜景 悠雾紫 5G手机 游戏拍照旗舰机s23
+        {{ detail.goods_name }}
       </div>
 
       <div class="service">
@@ -104,7 +104,8 @@
           <van-button color="#FF8C00" v-if="mode === 'cart' && detail.stock_total > 0" round size="large"
                       @click="addCart">加入购物车
           </van-button>
-          <van-button color="#FE5630" v-else-if="mode === 'buy' && detail.stock_total > 0" round size="large">立即购买
+          <van-button color="#FE5630" v-else-if="mode === 'buy' && detail.stock_total > 0" round size="large"
+                      @click="buyNow">立即购买
           </van-button>
           <van-button v-else round size="large" disabled>该商品已售完</van-button>
         </div>
@@ -117,9 +118,11 @@
 import { getProComment, getProDetail } from '@/api/product'
 import defaultImg from '@/assets/default-avatar.png'
 import { addCartList } from '@/api/cart'
+import loginConfirm from '@/mixins/loginConfirm'
 
 export default {
   name: 'ProDetail',
+  mixins: [loginConfirm],
   data () {
     return {
       images: [],
@@ -135,15 +138,18 @@ export default {
     }
   },
   methods: {
+    // 轮播图切换
     onChange (index) {
       this.current = index
     },
+    // 获取商品详情
     async getDetail () {
       // 获取商品详情
       const { data: { detail } } = await getProDetail(this.goodsId)
       this.detail = detail
       this.images = detail.goods_images
     },
+    // 获取商品评价
     async getComment () {
       // 获取商品评价
       const {
@@ -155,40 +161,40 @@ export default {
       this.comment = list
       this.total = total
     },
+    // 点击加入购物车触发的函数
     addShop () {
       this.mode = 'cart'
       this.shoppingPannel = true
     },
+    // 点击立即购买触发的函数
     buyShop () {
       this.mode = 'buy'
       this.shoppingPannel = true
     },
+    // 点击弹窗中添加购物车按钮触发的函数
     async addCart () {
-      // 1.判断token是否存在(是否登录), 没有则弹出提示框确认是否登录
-      if (!this.$store.getters.token) {
-        this.$dialog.confirm({
-          title: '提示',
-          message: '该功能需要登录，是否前往登录？',
-          confirmButtonText: '去登录',
-          cancelButtonText: '再逛逛',
-          confirmButtonColor: '#FFA900',
-          beforeClose: this.beforeClose
-        }).then(() => {
-          this.$router.replace({
-            path: '/login',
-            query: {
-              // 登录完毕后回到当前页面
-              redirect: this.$route.fullPath
-            }
-          })
-        }).catch(() => {
-        })
-      } else {
-        const { data } = await addCartList(this.goodsId, this.shoppingNum, this.detail.skuList[0].goods_sku_id)
-        this.cartTotal = data.cartTotal
-        this.$toast.success('购物车添加成功')
-        this.shoppingPannel = false
+      if (this.loginConfirm()) {
+        return
       }
+      const { data } = await addCartList(this.goodsId, this.shoppingNum, this.detail.skuList[0].goods_sku_id)
+      this.cartTotal = data.cartTotal
+      this.$toast.success('购物车添加成功')
+      this.shoppingPannel = false
+    },
+    // 点击弹窗中立即购买按钮触发的函数
+    buyNow () {
+      if (this.loginConfirm()) {
+        return
+      }
+      this.$router.push({
+        path: '/pay',
+        query: {
+          mode: 'buyNow',
+          goodsId: this.goodsId,
+          goodsSkuId: this.detail.skuList[0].goods_sku_id,
+          goodsNum: this.shoppingNum
+        }
+      })
     }
   },
   computed: {
@@ -425,6 +431,7 @@ export default {
     margin-bottom: 10px;
   }
 }
+
 .custom-badge {
   ::v-deep .van-badge {
     transform: translate(40%, -20%);
