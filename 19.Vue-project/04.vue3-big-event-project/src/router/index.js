@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '@/stores/index.js'
 
 // 初始化Vue-Router4
 const router = createRouter({
@@ -19,6 +20,16 @@ const router = createRouter({
       ]
     }
   ],
+})
+
+// 路由导航守卫
+router.beforeEach((to) => {
+  // 获取token
+  const userStore = useUserStore()
+  const token = userStore.token
+  // 如果没有token，并且访问的不是登录页，则跳转到登录页
+  if (!token && to.path !== '/login') return '/login'
+  return true
 })
 
 export default router
