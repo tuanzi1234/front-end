@@ -1,84 +1,179 @@
 <script setup>
 import { ref } from 'vue'
-import { addCategoryService,updateCategoryService } from '@/api/category.js'
+import CategorySelect from '@/view/article/components/CategorySelect.vue'
+import { Plus } from '@element-plus/icons-vue'
+import { QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css'
+import { addArticleService } from '@/api/article.js'
 import { ElMessage } from 'element-plus'
 
-// 表单对象
-const categoryRef = ref()
-// 控制弹窗显示
-const dialogVisible = ref(false)
-// 表单数据
-const categoryModel = ref({
-  cate_name: '',
-  cate_alias: '',
+// 富文本编辑器
+const editor = ref()
+// 图片Url
+const imgUrl = ref('')
+// 控制抽屉变量
+const visibleDrawer = ref(false)
+// 添加文章得表单
+const addArticleForm = ref({
+  title: '',
+  cate_id: '',
+  content: '',
+  cover_img: '',
+  state: '',
 })
-// 同时需要定义 emits
-const emits = defineEmits(['success'])
-// 表单验证
-const categoryRules = {
-  cate_name: [
-    { required: true, message: '请输入分类名称', trigger: 'blur' },
-    { pattern: /^\S{1,10}$/, message: '长度在 1 到 10 位的非空字符', trigger: 'blur' },
-  ],
-  cate_alias: [
-    { required: true, message: '请输入分类别名', trigger: 'blur' },
-    {
-      pattern: /^[a-zA-Z0-9]{1,15}$/,
-      message: '长度在 1 到 15 位的非空字母或数字字符',
-      trigger: 'blur',
-    },
-  ],
-}
-// 添加一个方法，在其他组件调用时是编辑或添加
-const openDialog = (row) => {
-  categoryModel.value = {...row}
-  dialogVisible.value = true
-}
-
-// 点击确定按钮提交表单
-const onsubmit = () => {
-  categoryRef.value.validate(async (valid) => {
-    if (!valid) return
-    const formId = categoryModel.value.id
-    if (formId) {
-      await updateCategoryService({
-        id: formId,
-        cate_name: categoryModel.value.cate_name,
-        cate_alias: categoryModel.value.cate_alias,
-      })
-      ElMessage.success('编辑成功')
-    } else {
-      await addCategoryService({
-        cate_name: categoryModel.value.cate_name,
-        cate_alias: categoryModel.value.cate_alias,
-      })
-      ElMessage.success('添加成功')
+const emit = defineEmits(['success'])
+// 打开抽屉
+const openDrawer = (row) => {
+  visibleDrawer.value = true
+  if (row?.id) {
+    // 当编辑文章时，将数据回显
+    addArticleForm.value = {...row}
+  } else {
+    // 添加文章时，清空表单
+    addArticleForm.value = {
+      title: '',
+      cate_id: '',
+      content: '',
+      cover_img: '',
+      state: '',
     }
-      emits('success')
-      dialogVisible.value = false
-  })
+    // 重置富文本编辑器和图片Url
+    imgUrl.value = ''
+    editor.value.setHTML('')
+  }
 }
-// 暴露弹窗给其他组件调用
+// 上传图片
+const onSelectFile = (uploadFile) => {
+  imgUrl.value = URL.createObjectURL(uploadFile.raw)
+  addArticleForm.value.cover_img = uploadFile.raw
+}
+// 发布文章
+const onPublish = async (state) => {
+  addArticleForm.value.state = state
+  const formData = new FormData()
+  for (let key in addArticleForm.value) {
+    // 添加表单数据
+    formData.append(key, addArticleForm.value[key])
+  }
+  if (addArticleForm.value.id) {
+    // 编辑文章
+    console.log(addArticleForm.value)
+  } else {
+    // 添加文章
+    await addArticleService(formData).then(() => {
+      ElMessage.success('添加成功')
+      visibleDrawer.value = false
+      emit('success', 'add')
+    })
+  }
+}
+// 暴露方法
 defineExpose({
-  openDialog,
+  openDrawer,
 })
 </script>
-
 <template>
-  <el-dialog v-model="dialogVisible" :title="categoryModel.id ? '编辑分类' : '添加分类'" width="500">
-    <el-form ref="categoryRef" :model="categoryModel" :rules="categoryRules" label-width="80px">
-      <el-form-item label="分类名称" prop="cate_name">
-        <el-input v-model="categoryModel.cate_name" placeholder="请输入分类名称"></el-input>
+  <!-- 抽屉 -->
+  <el-drawer v-model="visibleDrawer" title="标题">
+    <el-form>
+      <el-form-item label="标题">
+        <el-input v-model="addArticleForm.title" placeholder="请输入标题"></el-input>
       </el-form-item>
-      <el-form-item label="分类别名" prop="cate_alias">
-        <el-input v-model="categoryModel.cate_alias" placeholder="请输入分类别名"></el-input>
+      <el-form-item label="分类">
+        <CategorySelect v-model="addArticleForm.cate_id"></CategorySelect>
+      </el-form-item>
+      <el-form-item label="封面">
+        <el-upload
+          class="avatar-uploader"
+          :show-file-list="false"
+          :auto-upload="false"
+          :on-change="onSelectFile"
+        >
+          <img v-if="imgUrl" :src="imgUrl" class="avatar" alt="" />
+          <el-icon v-else class="avatar-uploader-icon">
+            <Plus />
+          </el-icon>
+        </el-upload>
+      </el-form-item>
+      <el-form-item label="内容">
+        <quill-editor
+          ref="editor"
+          v-model:content="addArticleForm.content"
+          content-type="html"
+          theme="snow"
+        ></quill-editor>
+      </el-form-item>
+      <el-form-item>
+        <div class="edit">
+          <el-button @click="onPublish('已发布')" type="primary">发布</el-button>
+          <el-button @click="onPublish('草稿')" type="info">草稿</el-button>
+        </div>
       </el-form-item>
     </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="onsubmit">确定</el-button>
-      </div>
-    </template>
-  </el-dialog>
+  </el-drawer>
 </template>
+<style scoped lang="scss">
+.edit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 500px;
+  margin: 50px auto;
+}
+
+.avatar-uploader .avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+  object-fit: cover; /* 或 contain */
+}
+
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
+  border: #8c939d 1px dashed;
+}
+
+/* 确保富文本编辑器的工具栏和编辑区域垂直排列 */
+:deep(.ql-toolbar) {
+  display: block !important;
+  width: 100% !important;
+}
+
+:deep(.ql-container) {
+  display: block !important;
+  width: 100% !important;
+}
+
+/* 确保编辑器容器正常流式布局 */
+.el-form-item :deep(.quill-editor) {
+  display: block !important;
+}
+
+/* 确保工具栏和容器正常堆叠 */
+:deep(.ql-toolbar.ql-snow) {
+  margin-bottom: 0 !important;
+  border-radius: 4px 4px 0 0 !important;
+}
+
+:deep(.ql-container.ql-snow) {
+  border-top: 0 !important;
+  border-radius: 0 0 4px 4px !important;
+}
+</style>

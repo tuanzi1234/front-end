@@ -3,7 +3,7 @@ import PageContainer from '@/components/PageContainer.vue'
 import { onMounted, ref } from 'vue'
 import { getCategoryService } from '@/api/category'
 import { Delete, Edit } from '@element-plus/icons-vue'
-import ArticleEdit from '@/view/article/components/ArticleEdit.vue'
+import CategoryEdit from '@/view/article/components/CategoryEdit.vue'
 import { deleteCategoryService } from '@/api/category'
 import { ElMessageBox, ElMessage } from 'element-plus'
 
@@ -62,6 +62,6 @@ const onEditCategory = (row) => {
         <el-empty description="暂无数据"/>
       </template>
     </el-table>
-    <ArticleEdit ref="dialog" @success="getCategoryList"></ArticleEdit>
+    <CategoryEdit ref="dialog" @success="getCategoryList"></CategoryEdit>
   </PageContainer>
 </template>
