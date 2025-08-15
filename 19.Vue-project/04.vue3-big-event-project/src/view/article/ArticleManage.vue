@@ -95,7 +95,7 @@ const onSuccess = (type) => {
       </el-form-item>
       <el-form-item label="文章状态">
         <el-select placeholder="请选择" clearable v-model="articleParams.state">
-          <el-option label="发布" value="发布"></el-option>
+          <el-option label="已发布" value="已发布"></el-option>
           <el-option label="草稿" value="草稿"></el-option>
         </el-select>
       </el-form-item>
@@ -106,7 +106,11 @@ const onSuccess = (type) => {
     </el-form>
     <!--表格区域-->
     <el-table :data="articleData" v-loading="loading" style="width: 100%">
-      <el-table-column label="文章标题" width="300" prop="title"> </el-table-column>
+      <el-table-column label="文章标题" width="300" prop="title">
+        <template #default="scope">
+          <el-link type="primary" :underline="false">{{ scope.row.title }}</el-link>
+        </template>
+      </el-table-column>
       <el-table-column label="文章分类" prop="cate_name"> </el-table-column>
       <el-table-column label="发布时间" prop="pub_date">
         <template #default="scope">

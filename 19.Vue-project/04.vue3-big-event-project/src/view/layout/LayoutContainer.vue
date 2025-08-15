@@ -12,7 +12,7 @@ import {
 import { onMounted } from 'vue'
 import { useUserStore } from '@/stores/index.js'
 import deFaultAvatar from '@/assets/default.png'
-import {useRouter} from 'vue-router'
+import { useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 
 const router = useRouter()
@@ -22,16 +22,18 @@ onMounted(() => {
 })
 const handleCommand = (command) => {
   if (command === 'logout') {
-    ElMessageBox.confirm( '确定要退出登录吗？','Warning',{
+    ElMessageBox.confirm('确定要退出登录吗？', 'Warning', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
-      }).then(() => {
-      userStore.removeToken()
-      userStore.setUser({})
-      // 跳转到登录页面
-      router.push('/login')
-    }).catch(() => {})
+    })
+      .then(() => {
+        userStore.removeToken()
+        userStore.setUser({})
+        // 跳转到登录页面
+        router.push('/login')
+      })
+      .catch(() => {})
   } else {
     router.push(command)
   }
@@ -41,7 +43,7 @@ const handleCommand = (command) => {
 <template>
   <div class="common-layout">
     <el-container>
-<!--      左半部分菜单-->
+      <!--      左半部分菜单-->
       <el-aside width="200px">
         <el-menu
           router
@@ -92,20 +94,22 @@ const handleCommand = (command) => {
         </el-menu>
       </el-aside>
       <el-container>
-<!--        头部-->
+        <!--头部-->
         <el-header>
           <div class="user">
-            程序员:&nbsp;<span class="name">{{ userStore.user.username || userStore.user.nickname }}</span>
+            程序员:&nbsp;<span class="name">{{
+              userStore.user.username || userStore.user.nickname
+            }}</span>
           </div>
           <div class="avatar">
             <el-dropdown trigger="click" @command="handleCommand">
               <span class="el-dropdown-link">
-                <el-avatar :size="50" :src="deFaultAvatar || userStore.user.user_pic" />
+                <el-avatar :size="50" :src="userStore.user.user_pic || deFaultAvatar" />
                 <el-icon class="el-icon--right">
                   <arrow-down />
                 </el-icon>
               </span>
-<!--              下拉菜单-->
+              <!--下拉菜单-->
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item command="/user/profile">
@@ -137,7 +141,7 @@ const handleCommand = (command) => {
             </el-dropdown>
           </div>
         </el-header>
-<!--        页面主体-->
+        <!--        页面主体-->
         <el-main>
           <router-view></router-view>
         </el-main>

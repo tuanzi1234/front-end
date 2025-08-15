@@ -4,8 +4,10 @@ import CategorySelect from '@/view/article/components/CategorySelect.vue'
 import { Plus } from '@element-plus/icons-vue'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
-import { addArticleService } from '@/api/article.js'
+import { addArticleService, getArticleDetailService, updateArticleService } from '@/api/article.js'
 import { ElMessage } from 'element-plus'
+import { baseURL } from '@/utils/request.js'
+import axios from 'axios'
 
 // 富文本编辑器
 const editor = ref()
@@ -23,11 +25,18 @@ const addArticleForm = ref({
 })
 const emit = defineEmits(['success'])
 // 打开抽屉
-const openDrawer = (row) => {
+const openDrawer = async (row) => {
   visibleDrawer.value = true
   if (row?.id) {
     // 当编辑文章时，将数据回显
-    addArticleForm.value = {...row}
+    const res = await getArticleDetailService(row.id)
+    addArticleForm.value = res.data.data
+    imgUrl.value = baseURL + res.data.data.cover_img
+    // 将图片URL转换为File对象，以便表单提交时使用
+    addArticleForm.value.cover_img = await convertUrlToFile(
+      imgUrl.value,
+      addArticleForm.value.cover_img
+    )
   } else {
     // 添加文章时，清空表单
     addArticleForm.value = {
@@ -57,7 +66,10 @@ const onPublish = async (state) => {
   }
   if (addArticleForm.value.id) {
     // 编辑文章
-    console.log(addArticleForm.value)
+    await updateArticleService(formData)
+    ElMessage.success('编辑成功')
+    visibleDrawer.value = false
+    emit('success', 'update')
   } else {
     // 添加文章
     await addArticleService(formData).then(() => {
@@ -71,6 +83,27 @@ const onPublish = async (state) => {
 defineExpose({
   openDrawer,
 })
+// 图片转换成File对象
+const convertUrlToFile = async (url, filename) => {
+  try {
+    // 1. 使用axios获取网络图片数据，设置responseType为blob以获取二进制数据
+    const response = await axios.get(url, { responseType: 'blob' })
+
+    // 2. 基于返回的blob数据创建File对象
+    // 第一个参数是包含blob数据的数组
+    // 第二个参数是文件名
+    // 第三个参数是配置对象，设置文件类型
+    const file = new File([response.data], filename, {
+      type: response.data.type || 'image/jpeg' // 如果无法确定类型，默认设为jpeg
+    })
+
+    return file
+  } catch (error) {
+    // 4. 错误处理
+    ElMessage.error('图片转换失败')
+    throw error
+  }
+}
 </script>
 <template>
   <!-- 抽屉 -->
