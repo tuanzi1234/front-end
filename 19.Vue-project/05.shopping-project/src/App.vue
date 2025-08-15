@@ -2,8 +2,14 @@
 </script>
 
 <template>
-  <RouterView />
+  <RouterView/>
+  <div>
+    test
+  </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+div {
+  color: $warnColor
+}
 </style>
