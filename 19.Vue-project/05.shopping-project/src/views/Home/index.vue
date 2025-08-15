@@ -1,9 +1,13 @@
 <script setup>
+
 </script>
 
 <template>
-  <RouterView />
+  <div>
+    首页
+  </div>
 </template>
 
 <style scoped>
+
 </style>
