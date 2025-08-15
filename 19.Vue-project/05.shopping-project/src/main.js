@@ -1,4 +1,5 @@
-
+// 引入重置样式
+import './styles/common.scss'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
