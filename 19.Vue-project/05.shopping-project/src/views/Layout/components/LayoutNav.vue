@@ -1,6 +1,6 @@
 <script setup>
 
-import {User} from "@element-plus/icons-vue";
+import {User} from "@element-plus/icons-vue"
 </script>
 
 <template>
