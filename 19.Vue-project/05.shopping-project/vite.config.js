@@ -1,10 +1,10 @@
-import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
+import {fileURLToPath, URL} from 'node:url'
+import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -18,7 +18,7 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()],
     }),
     Components({
-      resolvers: [ElementPlusResolver({ importStyle: 'sass' })],
+      resolvers: [ElementPlusResolver({importStyle: 'sass'})],
     }),
   ],
   resolve: {
@@ -35,4 +35,10 @@ export default defineConfig({
       },
     },
   },
+  // 确保正确处理 JSON 文件
+  esbuild: {
+    loader: {
+      '.json': 'json'
+    }
+  }
 })
